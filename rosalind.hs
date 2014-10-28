@@ -1,4 +1,5 @@
 import Data.List
+import Data.List.Split
 
 normalize :: [Int] -> String
 normalize = intercalate " " . map show
@@ -44,3 +45,74 @@ subs strand repeat = normalize $ map (+1) $ filter repeatAtIndex possibleRepeatI
   where repeatLength          = length repeat
         possibleRepeatIndices = findIndices (\char -> char == head repeat) strand
         repeatAtIndex index   = (take repeatLength $ drop index strand) == repeat
+
+-- Convert an RNA (mRNA) string into a protein string
+prot :: String -> String
+prot =  concatMap rnaCodonTable . init . chunksOf 3
+
+rnaCodonTable :: String -> String
+rnaCodonTable "UUU" = "F"    
+rnaCodonTable "UUC" = "F"
+rnaCodonTable "UUA" = "L"
+rnaCodonTable "UUG" = "L"
+rnaCodonTable "UCU" = "S"
+rnaCodonTable "UCC" = "S"
+rnaCodonTable "UCA" = "S"
+rnaCodonTable "UCG" = "S"
+rnaCodonTable "UAU" = "Y"
+rnaCodonTable "UAC" = "Y"
+rnaCodonTable "UAA" = "Stop"
+rnaCodonTable "UAG" = "Stop"
+rnaCodonTable "UGU" = "C"
+rnaCodonTable "UGC" = "C"
+rnaCodonTable "UGA" = "Stop"
+rnaCodonTable "UGG" = "W"
+rnaCodonTable "CUU" = "L"
+rnaCodonTable "CUC" = "L"
+rnaCodonTable "CUA" = "L"
+rnaCodonTable "CUG" = "L"
+rnaCodonTable "CCU" = "P"
+rnaCodonTable "CCC" = "P"
+rnaCodonTable "CCA" = "P"
+rnaCodonTable "CCG" = "P"
+rnaCodonTable "CAU" = "H"
+rnaCodonTable "CAC" = "H"
+rnaCodonTable "CAA" = "Q"
+rnaCodonTable "CAG" = "Q"
+rnaCodonTable "CGU" = "R"
+rnaCodonTable "CGC" = "R"
+rnaCodonTable "CGA" = "R"
+rnaCodonTable "CGG" = "R"
+rnaCodonTable "AUU" = "I"
+rnaCodonTable "AUC" = "I"
+rnaCodonTable "AUA" = "I"
+rnaCodonTable "AUG" = "M"
+rnaCodonTable "ACU" = "T"
+rnaCodonTable "ACC" = "T"
+rnaCodonTable "ACA" = "T"
+rnaCodonTable "ACG" = "T"
+rnaCodonTable "AAU" = "N"
+rnaCodonTable "AAC" = "N"
+rnaCodonTable "AAA" = "K"
+rnaCodonTable "AAG" = "K"
+rnaCodonTable "AGU" = "S"
+rnaCodonTable "AGC" = "S"
+rnaCodonTable "AGA" = "R"
+rnaCodonTable "AGG" = "R"
+rnaCodonTable "GUU" = "V"
+rnaCodonTable "GUC" = "V"
+rnaCodonTable "GUA" = "V"
+rnaCodonTable "GUG" = "V"
+rnaCodonTable "GCU" = "A"
+rnaCodonTable "GCC" = "A"
+rnaCodonTable "GCA" = "A"
+rnaCodonTable "GCG" = "A"
+rnaCodonTable "GAU" = "D"
+rnaCodonTable "GAC" = "D"
+rnaCodonTable "GAA" = "E"
+rnaCodonTable "GAG" = "E"
+rnaCodonTable "GGU" = "G"
+rnaCodonTable "GGC" = "G"
+rnaCodonTable "GGA" = "G"
+rnaCodonTable "GGG" = "G"
+
