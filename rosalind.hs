@@ -30,13 +30,17 @@ revc = map update . reverse
 -- hamming distance between two strands
 -- 'Error' between two DNA strands
 hamm :: String -> String -> Int
-hamm s1 s2 = foldr (\(v1, v2) acc -> if v1 /= v2 then acc + 1 else acc) 0 (zip s1 s2)
+hamm strand1 strand2 = foldr compareBases 0 zippedStrands
+  where zippedStrands = zip strand1 strand2
+        compareBases (base1, base2) errorCount | base1 == base2 = errorCount
+                                               | base1 /= base2 = errorCount + 1
 
 -- find substring indexes for repeats
 -- Finding repeats in DNA strands
 -- Strand -> Repeat -> List of indices of matches
+-- Matching indices should be +1 in the final output (strings start at 1, not 0)
 subs :: String -> String -> String
-subs s r = normalize $ map (+1) $ filter repeatAtIndex possibleRepeatIndices 
-  where rLength               = length r
-        possibleRepeatIndices = findIndices (\v -> v == head r) s
-        repeatAtIndex index   = (take rLength $ drop index s) == r 
+subs strand repeat = normalize $ map (+1) $ filter repeatAtIndex possibleRepeatIndices 
+  where repeatLength          = length repeat
+        possibleRepeatIndices = findIndices (\char -> char == head repeat) strand
+        repeatAtIndex index   = (take repeatLength $ drop index strand) == repeat
