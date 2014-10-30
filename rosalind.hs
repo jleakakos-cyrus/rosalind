@@ -4,10 +4,10 @@ import Data.List.Split
 normalize :: [Int] -> String
 normalize = intercalate " " . map show
 
--- [A, G, C, T]
+-- [A, C, G, T]
 -- Counts of nucleobases
-dna :: String -> String
-dna = normalize . foldr (\letter acc -> update letter acc) [0,0,0,0]
+dna :: String -> [Int]
+dna = foldr (\letter acc -> update letter acc) [0,0,0,0]
   where update 'A' [a, c, g, t] = [a+1, c, g, t]
         update 'C' [a, c, g, t] = [a, c+1, g, t]
         update 'G' [a, c, g, t] = [a, c, g+1, t]
@@ -40,8 +40,8 @@ hamm strand1 strand2 = foldr compareBases 0 zippedStrands
 -- Finding repeats in DNA strands
 -- Strand -> Repeat -> List of indices of matches
 -- Matching indices should be +1 in the final output (strings start at 1, not 0)
-subs :: String -> String -> String
-subs strand repeat = normalize $ map (+1) $ filter repeatAtIndex possibleRepeatIndices 
+subs :: String -> String -> [Int]
+subs strand repeat =  map (+1) $ filter repeatAtIndex possibleRepeatIndices 
   where repeatLength          = length repeat
         possibleRepeatIndices = findIndices (\char -> char == head repeat) strand
         repeatAtIndex index   = (take repeatLength $ drop index strand) == repeat
@@ -49,6 +49,53 @@ subs strand repeat = normalize $ map (+1) $ filter repeatAtIndex possibleRepeatI
 -- Convert an RNA (mRNA) string into a protein string
 prot :: String -> String
 prot =  concatMap rnaCodonTable . init . chunksOf 3
+
+-- Computing GC content
+--gc :: FullStringWithNewLinesButNo> -> (Name, DNAString)
+-- [A, C, G, T]
+gc :: String -> (String, String)
+gc fullLine = (name, gcCount)
+  where splitLine = splitOn "\n" fullLine
+        name = head splitLine
+        string = concat $ tail splitLine
+        [a, c, g, t] = dna string
+        gcCount = show $ 100 * ((fromIntegral (g + c)) / (fromIntegral (a + c + g + t)))
+
+gcRun :: IO (String, String) 
+gcRun = do
+  contents <- readFile "rosalind_gc.txt"
+  let fastaNameGCCounts = map gc $ tail $ splitOn ">" contents
+  let maxFasta = maximumBy (\(_, x) (_, y) -> compare x y) fastaNameGCCounts
+  putStrLn $ fst maxFasta
+  putStrLn $ snd maxFasta
+  return maxFasta 
+        
+-- Finding rabbit population after n months with k reproductive rate
+-- 33 2 -> 2863311531
+-- 5 3 -> 19
+fib :: Int -> Int -> Int
+fib 1 _ = 1
+fib 2 _ = 1
+fib months rate = (fib (months - 1) rate) + ((fib (months - 2) rate) * rate)
+
+-- What is the probability of having a dominant allele
+-- k => AA : m => Aa : n => aa
+iprb :: Double -> Double -> Double -> Double
+iprb k m n = sum [kk, km, kn, mk, mm, mn, nk, nm, nn]
+  where t = k + m + n
+        kk = (k / t) * ((k-1) / (t-1)) * domk
+        km = (k / t) * (m     / (t-1)) * domk
+        kn = (k / t) * (n     / (t-1)) * domk
+        mk = (m / t) * (k     / (t-1)) * domk
+        mm = (m / t) * ((m-1) / (t-1)) * dommm
+        mn = (m / t) * (n     / (t-1)) * dommn
+        nk = (n / t) * (k     / (t-1)) * domk
+        nm = (n / t) * (m     / (t-1)) * dommn
+        nn = (n / t) * ((n-1) / (t-1)) * domnn
+        domk  = 1.0
+        dommm = 0.75
+        dommn = 0.5
+        domnn = 0.0
 
 rnaCodonTable :: String -> String
 rnaCodonTable "UUU" = "F"    
