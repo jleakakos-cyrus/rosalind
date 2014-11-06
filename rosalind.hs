@@ -97,6 +97,36 @@ iprb k m n = sum [kk, km, kn, mk, mm, mn, nk, nm, nn]
         dommn = 0.5
         domnn = 0.0
 
+-- What is the expected number of dominant phenotype offspring?
+-- 1 0 0 1 0 1 => 3.5
+-- AAAA AAAa AAaa AaAa Aaaa aaaa => Total w/ Dominant
+-- Population * Probability of Dominant Children * Two Offspring
+-- Sum that up for all six possible parent-pairings
+iev :: Double -> Double -> Double -> Double -> Double -> Double -> Double
+iev one two three four five six = total
+  where one_v = one * 1.0 * 2.0
+        two_v = two * 1.0 * 2.0
+        three_v = three * 1.0 * 2.0
+        four_v = four * 0.75 * 2
+        five_v = five * 0.5 * 2
+        six_v = six * 0.0 * 2
+        total = sum [one_v, two_v, three_v, four_v, five_v, six_v]
+
+
+-- Total number of pairs of rabbits that remain after n months
+-- Rabbits live for m months
+-- Rabbit pairs have 1 offspring per month
+-- fibd :: n -> m -> Total
+-- New rabbits become breeding rabbits, but produce no offspring
+-- Breeding rabbits are tracked by month, and die when they pass index m, and product one pair of offspring
+-- Dieing rabbits disappear, and product one pair of offspring
+-- `rabbits` is a list tracking the rabbits in each month
+fibd :: Int -> Int -> Int
+fibd n m = go 1 (1:(take (m-1) (cycle [0])))
+  where go monthCount rabbits
+          | monthCount == n = sum rabbits
+          | otherwise       = go (monthCount + 1) (sum (tail rabbits):init rabbits)
+
 rnaCodonTable :: String -> String
 rnaCodonTable "UUU" = "F"    
 rnaCodonTable "UUC" = "F"
